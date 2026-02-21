@@ -14,7 +14,7 @@
             --glass-bg: rgba(255, 255, 255, 0.08);
             --glass-border: rgba(255, 255, 255, 0.2);
             --text-light: #f0f4f8;
-            --transition-smooth: all 0.4s ease-out;
+            --transition-smooth: opacity 0.3s ease;
         }
 
         html {
@@ -23,15 +23,19 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Kufi Arabic', sans-serif; }
 
+        /* قوفڵدانی شاشەکە بۆ ئەوەی بە هیچ شێوەیەک نەجووڵێت */
         body {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%; height: 100%;
             background-color: #0a0a0a;
             color: var(--text-light);
             overflow: hidden;
-            height: 100vh;
+            overscroll-behavior: none;
+            touch-action: none; /* ڕێگری لە هەموو جۆرە ڕاکێشان و جوڵەیەک دەکات */
             display: flex;
             justify-content: center;
             align-items: center;
-            touch-action: pan-x pan-y; 
         }
 
         .animated-bg {
@@ -50,38 +54,40 @@
         }
 
         .screen {
-            position: absolute; width: 100%; height: 100%;
+            position: absolute; 
+            top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none; transition: var(--transition-smooth);
-            transform: translateY(15px); padding: 15px;
+            opacity: 0; visibility: hidden; transition: var(--transition-smooth);
+            padding: 15px;
         }
 
-        .screen.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .screen.active { opacity: 1; visibility: visible; }
 
+        /* جێگیرکردنی قەبارەی بۆکسەکە بۆ ئەوەی بچووکتر و ستەیبڵ بێت */
         .glass-card {
             background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border); border-radius: 24px; padding: 30px;
-            width: 100%; max-width: 550px; 
-            max-height: 90vh; /* چارەسەری کێشەی بڕانی شاشەکە */
-            overflow-y: auto; /* ڕێگەدان بە سکڕۆڵ ئەگەر شاشە بچووک بوو */
+            border: 1px solid var(--glass-border); border-radius: 24px; padding: 30px 20px;
+            width: 92%; max-width: 420px; /* بچووکتر کرا */
+            height: 520px; /* بەرزییەکی جێگیر */
+            max-height: 85vh; 
+            overflow-y: auto; 
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            text-align: center; display: flex; flex-direction: column; justify-content: center;
+            text-align: center; display: flex; flex-direction: column; justify-content: flex-start;
             position: relative;
         }
 
-        /* ستایلی سکڕۆڵ بۆ بۆکسەکە تا دیزاینەکەی تێک نەچێت */
         .glass-card::-webkit-scrollbar { width: 6px; }
         .glass-card::-webkit-scrollbar-track { background: transparent; }
         .glass-card::-webkit-scrollbar-thumb { background: rgba(122, 40, 203, 0.5); border-radius: 10px; }
 
-        .logo { width: 90px; height: auto; margin: 0 auto 15px auto; border-radius: 15px; }
+        .logo { width: 80px; height: auto; margin: 0 auto 10px auto; border-radius: 15px; flex-shrink: 0; }
 
-        h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 20px; line-height: 1.6; background: linear-gradient(to right, #fff, #a3c2ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        h2 { font-size: 1.3rem; font-weight: 600; margin-bottom: 15px; }
-        p { font-size: 0.95rem; margin-bottom: 20px; color: #d1d5db; line-height: 1.6;}
+        h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 15px; line-height: 1.6; background: linear-gradient(to right, #fff, #a3c2ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { font-size: 1.2rem; font-weight: 600; margin-bottom: 15px; }
+        p { font-size: 0.9rem; margin-bottom: 15px; color: #d1d5db; line-height: 1.6;}
 
-        .input-group { margin-bottom: 20px; text-align: right; width: 100%; }
-        .input-group label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: #a3c2ff; }
+        .input-group { margin-bottom: 15px; text-align: right; width: 100%; flex-shrink: 0; }
+        .input-group label { display: block; margin-bottom: 8px; font-size: 0.85rem; color: #a3c2ff; }
         
         input[type="text"] {
             width: 100%; padding: 12px 15px; border-radius: 12px;
@@ -91,7 +97,7 @@
         }
         input[type="text"]:focus { border-color: var(--primary-blue); background: rgba(0, 0, 0, 0.4); }
 
-        .error-msg { color: var(--danger-red); font-size: 0.85rem; margin-top: 5px; display: none; }
+        .error-msg { color: var(--danger-red); font-size: 0.8rem; margin-top: 5px; display: none; }
 
         .custom-select-wrapper { position: relative; width: 100%; }
         .custom-select-trigger {
@@ -103,43 +109,42 @@
             position: absolute; top: 100%; left: 0; right: 0; background: rgba(20, 20, 30, 0.95);
             backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 12px;
             margin-top: 8px; opacity: 0; visibility: hidden; pointer-events: none; transition: all 0.3s ease;
-            max-height: 200px; overflow-y: auto; z-index: 10; text-align: right;
+            max-height: 180px; overflow-y: auto; z-index: 10; text-align: right;
         }
         .custom-select-wrapper.open .custom-options { opacity: 1; visibility: visible; pointer-events: auto; }
-        .custom-option { padding: 12px 20px; cursor: pointer; font-size: 16px; }
+        .custom-option { padding: 10px 15px; cursor: pointer; font-size: 15px; }
         .custom-option:hover { background: rgba(122, 40, 203, 0.4); }
 
         .btn {
             background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
-            border: none; border-radius: 12px; padding: 12px 25px; color: white;
-            font-size: 1.1rem; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; transition: all 0.3s ease;
+            border: none; border-radius: 12px; padding: 12px 20px; color: white;
+            font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; margin-top: auto; transition: all 0.3s ease;
+            flex-shrink: 0;
         }
-        .btn:hover { box-shadow: 0 4px 20px rgba(0, 210, 255, 0.3); transform: translateY(-2px); }
+        .btn:hover { box-shadow: 0 4px 20px rgba(0, 210, 255, 0.3); }
 
         .countdown-text { font-size: 8rem; font-weight: 800; background: linear-gradient(to right, #fff, var(--primary-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; width: 100%; }
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; width: 100%; flex-shrink: 0; }
         
         .timer-circle {
-            width: 45px; height: 45px; border-radius: 50%; border: 3px solid var(--primary-blue);
-            display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.2rem;
+            width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--primary-blue);
+            display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.1rem;
             color: var(--primary-blue); transition: all 0.3s;
         }
         .timer-danger { border-color: var(--danger-red); color: var(--danger-red); transform: scale(1.1); animation: pulse 1s infinite; }
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
-        .question-text { font-size: 1.1rem; margin-bottom: 20px; line-height: 1.8; text-align: right; width: 100%; }
-        .options-container { width: 100%; }
+        .question-text { font-size: 1.05rem; margin-bottom: 15px; line-height: 1.7; text-align: right; width: 100%; flex-shrink: 0; }
+        .options-container { width: 100%; flex-grow: 1; }
         
         .option-btn {
             background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px; padding: 12px 15px; width: 100%; text-align: right; color: white;
-            font-size: 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s ease;
+            font-size: 14px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease;
         }
         .option-btn:hover { background: rgba(122, 40, 203, 0.2); border-color: var(--primary-purple); }
-        
-        /* کاتێک هەڵی دەبژێرێت تەنها ڕەنگی دەگۆڕێت بەبێ پێدانی ئەنجام */
         .option-btn.selected { background: rgba(122, 40, 203, 0.5); border-color: var(--primary-blue); }
 
         .loader {
@@ -154,13 +159,15 @@
     <div class="animated-bg"></div>
 
     <div id="screen-welcome" class="screen active">
-        <img src="salahaddin-education-logo.png" alt="لۆگۆی کۆلێژ" class="logo" onerror="this.style.display='none'">
-        <h1 style="font-size: 2rem; text-align: center; max-width: 800px;">بەخێربێی بۆ پێشبڕکێی پرسیارو وەڵامی کۆلێژی پەروەردە</h1>
+        <div class="glass-card" style="justify-content: center;">
+            <img src="salahaddin-education-logo.png" alt="لۆگۆی کۆلێژ" class="logo" onerror="this.style.display='none'">
+            <h1>بەخێربێی بۆ پێشبڕکێی پرسیارو وەڵامی کۆلێژی پەروەردە</h1>
+        </div>
     </div>
 
     <div id="screen-form" class="screen">
         <div class="glass-card">
-            <img src="salahaddin-education-logo.png" alt="لۆگۆی کۆلێژ" class="logo" style="width: 70px;" onerror="this.style.display='none'">
+            <img src="salahaddin-education-logo.png" alt="لۆگۆی کۆلێژ" class="logo" onerror="this.style.display='none'">
             <h2>زانیارییەکانت تۆمار بکە</h2>
             
             <div class="input-group">
@@ -184,7 +191,6 @@
                 <div id="deptError" class="error-msg">تکایە بەشەکەت هەڵبژێرە</div>
             </div>
 
-            <p style="margin-top: 5px; font-weight: 600; color: white;">ئامادەی بۆ تاقیکردنەوەکە؟</p>
             <button class="btn" id="startBtn">با دەست پێبکەین</button>
         </div>
     </div>
@@ -192,12 +198,12 @@
     <div id="screen-countdown" class="screen"><div class="countdown-text" id="countdownTimer">3</div></div>
 
     <div id="screen-quiz" class="screen">
-        <div class="glass-card" style="justify-content: flex-start;">
+        <div class="glass-card">
             <div class="quiz-header">
                 <div class="timer-circle" id="questionTimer">10</div>
                 <div style="text-align: right;">
-                    <div style="color: var(--primary-blue); font-weight: bold; margin-bottom: 5px;" id="questionCounter">پرسیاری 1 / 20</div>
-                    <div id="displayUserName" style="color: #ccc; font-size: 0.85rem;">ناو</div>
+                    <div style="color: var(--primary-blue); font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;" id="questionCounter">پرسیاری 1 / 20</div>
+                    <div id="displayUserName" style="color: #ccc; font-size: 0.8rem;">ناو</div>
                 </div>
             </div>
             <div class="question-text" id="questionText">دەقی پرسیار</div>
@@ -206,7 +212,7 @@
     </div>
 
     <div id="screen-result" class="screen">
-        <div class="glass-card">
+        <div class="glass-card" style="justify-content: center;">
             <div id="loadingBox" style="display: none;">
                 <div class="loader"></div>
                 <p>چاوەڕێبە، ئەنجامەکەت دەنێردرێت...</p>
@@ -364,7 +370,7 @@
                 
                 if(timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    score -= 1; // لێبڕینی خاڵێک
+                    score -= 1;
                     timeOutNextQuestion();
                 }
             }, 1000);
@@ -375,17 +381,16 @@
             const correctIndex = questions[currentQuestionIndex].answer;
             const allBtns = document.querySelectorAll('.option-btn');
             
-            allBtns.forEach(b => b.style.pointerEvents = 'none'); // ڕێگری لە دووبارە کلیک
+            allBtns.forEach(b => b.style.pointerEvents = 'none');
 
-            btn.classList.add('selected'); // تەنها نیشانی بدە کە کامەی هەڵبژاردووە
+            btn.classList.add('selected');
 
             if(selectedIndex === correctIndex) {
                 score += 1;
             } else {
-                score -= 1; // هەڵەبوو یەک خاڵ دەبڕێت
+                score -= 1;
             }
 
-            // دوای ماوەیەکی کورت دەچێتە پرسیاری دواتر
             setTimeout(() => {
                 currentQuestionIndex++;
                 loadQuestion();
@@ -417,7 +422,7 @@
         function triggerCheat(message) {
             isQuizActive = false;
             clearInterval(timerInterval);
-            score = 0;
+            score = "'00"; // لێرەدا دەبێتە دوو سفر وەک تێکست دەچێت بۆ گۆگڵ شیتەکە
             endQuiz(message, true);
         }
 
