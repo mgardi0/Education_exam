@@ -17,13 +17,10 @@
             --transition-smooth: opacity 0.3s ease;
         }
 
-        html {
-            -webkit-text-size-adjust: 100%;
-        }
+        html { -webkit-text-size-adjust: 100%; }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Kufi Arabic', sans-serif; }
 
-        /* قوفڵدانی شاشەکە بۆ ئەوەی بە هیچ شێوەیەک نەجووڵێت */
         body {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -32,7 +29,7 @@
             color: var(--text-light);
             overflow: hidden;
             overscroll-behavior: none;
-            touch-action: none; /* ڕێگری لە هەموو جۆرە ڕاکێشان و جوڵەیەک دەکات */
+            touch-action: none; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -63,12 +60,11 @@
 
         .screen.active { opacity: 1; visibility: visible; }
 
-        /* جێگیرکردنی قەبارەی بۆکسەکە بۆ ئەوەی بچووکتر و ستەیبڵ بێت */
         .glass-card {
             background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border); border-radius: 24px; padding: 30px 20px;
-            width: 92%; max-width: 420px; /* بچووکتر کرا */
-            height: 520px; /* بەرزییەکی جێگیر */
+            width: 92%; max-width: 420px; 
+            height: 520px; 
             max-height: 85vh; 
             overflow-y: auto; 
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
@@ -156,6 +152,10 @@
 </head>
 <body>
 
+    <audio id="bgMusic" loop preload="auto">
+        <source src="Tick-Tock(MP3_320K).mp3" type="audio/mpeg">
+    </audio>
+
     <div class="animated-bg"></div>
 
     <div id="screen-welcome" class="screen active">
@@ -200,7 +200,7 @@
     <div id="screen-quiz" class="screen">
         <div class="glass-card">
             <div class="quiz-header">
-                <div class="timer-circle" id="questionTimer">10</div>
+                <div class="timer-circle" id="questionTimer">30</div>
                 <div style="text-align: right;">
                     <div style="color: var(--primary-blue); font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;" id="questionCounter">پرسیاری 1 / 20</div>
                     <div id="displayUserName" style="color: #ccc; font-size: 0.8rem;">ناو</div>
@@ -224,29 +224,32 @@
     </div>
 
     <script>
-        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzP8TYcKlPu4VA3liRy-UIUUoJBY5IOZM9gazbJ4e6qeePMy8QfVcNB3_IMkloYxBYY/exec";
+        // لینکی نوێی گۆوگڵ شیتەکە
+        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbyMsICqKF1x1jgRASERFa9W4Bz55IKI8QnUSca6Tdb4_3-dztgBvqr2Ja62amhYyUSx/exec";
+        const bgMusic = document.getElementById('bgMusic');
 
+        // لیستی پرسیارە نوێیەکان
         const questions = [
-            { q: "ئەگەر خانەیەکی ڕووەکی بخرێتە ناو گیراوەیەک کە خەستی خوێیەکەی زۆر بەرز بێت (Hypertonic)، کام لەم دیاردانە ڕوودەدات؟", options: ["A) خانەکە دەتەقێت بەهۆی زۆری ئاوەوە.", "B) ناوەڕۆکی خانەکە گرژ دەبێت و لە دیوارەخانە دوور دەکەوێتەوە.", "C) خانەکە دەئاوسێت بەبێ ئەوەی بتەقێت.", "D) هیچ گۆڕانکارییەک لە قەبارەی خانەکەدا ڕوونادات."], answer: 1 },
-            { q: "بۆچی ئاو (H2O) لە پلەی گەرمی ژووردا شلە، لەکاتێکدا هایدرۆجین سەلفاید (H2S) کە کێشی مۆڵی زیاترە بە گاز دەمێنێتەوە؟", options: ["A) بەهۆی بوونی بەندی ئایۆنی لە ئاودا.", "B) بەهۆی جیاوازی قەبارەی گەردەکان.", "C) بەهۆی بوونی بەندی هایدرۆجینی بەهێز لەنێوان گەردەکانی ئاودا.", "D) چونکە ئۆکسجین کانزایە و گۆگرد ناکانزایە."], answer: 2 },
-            { q: "ئەگەر کەسێک لە ناو ئەسانسێرێکدا بێت و کێبڵەکەی بپچڕێت (کەوتنی ئازاد)، کێشی مرۆڤەکە لەسەر تەرازوویەک لە ناو ئەسانسێرەکە چەند دەبێت؟", options: ["A) کێشی زیاد دەکات.", "B) کێشی وەک خۆی دەمێنێتەوە.", "C) دەبێت بە سفر (باری بێ کێشی).", "D) کێشی نیوە دەبێت."], answer: 2 },
-            { q: "ئەگەر تێکڕای پێنج ژمارە یەکسان بێت بە 20، و یەکێک لە ژمارەکان لابدەین و تێکڕای چوار ژمارەکەی تر ببێتە 15، ئەو ژمارەیەی لادراوە چەندە؟", options: ["A) 25", "B) 35", "C) 50", "D) 40"], answer: 3 },
-            { q: "لە کاتی چارەسەرکردنی کێشەیەکی ڕەفتاری خوێندکارێکدا، کامە هەنگاو بە بنچینەییترین هەنگاو دادەنرێت بۆ ڕێنماییکار؟", options: ["A) سزادانی خوێندکارەکە بۆ ئەوەی دووبارەی نەکاتەوە.", "B) دۆزینەوەی پاڵنەر و هۆکارە سەرەکییەکانی پشت ڕەفتارەکە.", "C) گواستنەوەی خوێندکارەکە بۆ قوتابخانەیەکی تر.", "D) ئاگادارکردنەوەی پۆلیس لە ڕەفتارەکە."], answer: 1 },
-            { q: "چەمکی 'پەروەردەی گشتگیر' (Inclusion) لە پەروەردەی تایبەتدا بە چ واتایەک دێت؟", options: ["A) جیاکردنەوەی خاوەن پێداویستییە تایبەتەکان لە قوتابخانەی جیاواز.", "B) تێکەڵکردنی خوێندکارانی خاوەن پێداویستی تایبەت لەگەڵ هاوتەمەنە ئاساییەکانیان.", "C) تەنها گرنگیدان بەو خوێندکارانەی ئاستی ژیرییان زۆر بەرزە.", "D) کەمکردنەوەی کاتژمێرەکانی خوێندن بۆ خوێندکارە لاوازەکان."], answer: 1 },
-            { q: "Identify the correct conditional sentence that expresses a hypothetical situation in the past:", options: ["A) If I study hard, I will pass.", "B) If I studied hard, I would pass.", "C) If I had studied hard, I would have passed.", "D) If I have studied hard, I would pass."], answer: 2 },
-            { q: "ما هي الحالة الإعرابية لكلمة 'الطالبُ' في جملة (کافأ المعلمُ الطالبَ)؟", options: ["A) الرفع لأنه فاعل.", "B) الجر لأنه مضاف إليه.", "C) الجزم لأنه فعل مضارع.", "D) النصب لأنه مفعول به."], answer: 3 },
-            { q: "لە ڕستەی 'شێرکۆ بێکەس شاعیرێکی ناسراوە'، وشەی (شاعیرێکی) چ جۆرە ناوێکە؟", options: ["A) ناوی ناسراو (مەعریفە).", "B) ناوی نەناسراو (نەکیرە).", "C) ناوی کۆ.", "D) ناوی جێناو."], answer: 1 },
-            { q: "زمانی سریانی سەر بە کام خێزانی زمانەوانییە؟", options: ["A) زمانە هیندۆئەوروپییەکان.", "B) زمانە تورکییەکان.", "C) زمانە سامییەکان.", "D) زمانە چینییەکان."], answer: 2 },
-            { q: "بۆچی لە کاتی وەرزشکردنی تونددا ماسولکەکان هەست بە ماندووبوون و کزان دەکەن؟", options: ["A) بەهۆی زۆری ڕێژەی ئاو لە ماسولکەدا.", "B) بەهۆی گۆڕانی گلوکۆز بۆ وزە بە شێوەی هەوایی.", "C) بەهۆی کرداری ترشان و دروستبوونی ترشی لاکتیک (Lactic acid).", "D) بەهۆی کەمی پەستانی خوێن."], answer: 2 },
-            { q: "لە کارلێکی ئۆکسان و داشکاندا (Redox)، ئەو ماددەیەی کە ئەلیکترۆن لەدەست دەدات پێی دەوترێت:", options: ["A) ماددەی کەمکەرەوە (Reducing agent).", "B) ماددەی ئۆکسێنەر (Oxidizing agent).", "C) ماددەی هاوسەنگ.", "D) ماددەی هاندەر."], answer: 0 },
-            { q: "ئەگەر تیشکێکی ڕووناکی لە هەواوە بچێتە ناو شووشە، چی بەسەر خێرایی و درێژی شەپۆلەکەیدا دێت؟", options: ["A) خێراییەکەی زیاد دەکات و درێژی شەپۆل کەم دەکات.", "B) خێرایی و درێژی شەپۆلەکەی کەم دەکەن.", "C) خێرایی کەم دەکات و درێژی شەپۆل زیاد دەکات.", "D) هەردووکیان وەک خۆیان دەمێننتەوە."], answer: 1 },
-            { q: "ئەگەر نرخێک بە ڕێژەی 20% دابەزێت، پاشان جارێکی تر بە ڕێژەی 20% زیاد بکرێتەوە، ئایا نرخی کۆتایی چۆنە؟", options: ["A) وەک خۆی دەمێنێتەوە.", "B) زیاتر دەبێت لە نرخی سەرەتا.", "C) کەمتر دەبێت لە نرخی سەرەتا.", "D) دەبێت بە دوو ئەوەندەی نرخی سەرەتا."], answer: 2 },
-            { q: "بەپێی تیۆری (ئیبرام ماسلۆ)، کامە لەمانە لە بنکەی هەرەمەکەدایە؟", options: ["A) پێویستی بەدیهێنانی خود.", "B) پێویستییە فیسیۆلۆژییەکان (وەک خواردن و ئاو).", "C) پێویستی ڕێزگرتن و شکۆمەندی.", "D) پێویستی ئاسایش و دڵنیایی."], answer: 1 },
-            { q: "دیسلێکسیا (Dyslexia) وەک گرفتێکی فێربوون، زیاتر پەیوەندی بە کام لایەنەوە هەیە؟", options: ["A) کێشە لە ئەنجامدانی کردارە بیرکارییەکان.", "B) کێشە لە کۆنتڕۆڵکردنی جوڵەی دەست.", "C) قورسی لە خوێندنەوە و ناسینەوەی پیت و وشەکان.", "D) لاوازی لە توانای بیستن."], answer: 2 },
-            { q: "Which of the following is an example of an 'Oxymoron'?", options: ["A) The wind whispered.", "B) Fast as a lion.", "C) Bittersweet.", "D) I have a million things to do."], answer: 2 },
-            { q: "أي من الأفعال التالية هو 'فعل معتل'؟", options: ["A) كَتَبَ.", "B) قَرَأَ.", "C) قَالَ.", "D) جَلَسَ."], answer: 2 },
-            { q: "لەم دێرە شیعرەی (نالی): 'مەستەورە بە غەمزەی وەک و تیری'، شاعیر چ جۆرە جوانییەکی ئەدەبی بەکارھێناوە؟", options: ["A) تەشبێھ (چواندن).", "B) کینایە.", "C) دژایەتی (طباق).", "D) مانیای سپی."], answer: 0 },
-            { q: "پیتەکانی زمانی سریانی لە چەند پیت پێکدێن؟", options: ["A) 28 پیت.", "B) 24 پیت.", "C) 20 پیت.", "D) 22 پیت."], answer: 3 }
+            { q: "کامیان لەم هۆکارانە بەرپرسە لە گواستنەوەی نیشانە دەمارەییەکان لە نێوان دوو دەمارەخانەدا لە ڕێگەی 'Synapse'؟", options: ["A) پۆتاسیۆم", "B) ترشی ئەمینی", "C) گواستەرە دەمارەییەکان (Neurotransmitters)", "D) هۆرمۆنی ئەدریناڵین"], answer: 2 },
+            { q: "لە کارلێکی گەرمیمژدا (Endothermic)، گۆڕانی گەرمی (ΔH) چۆنە؟", options: ["A) سفرە", "B) نەرێنییە (کەمتر لە سفر)", "C) ئەرێنییە (زیاتر لە سفر)", "D) پەیوەندی بە پلەی گەرمییەوە نییە"], answer: 2 },
+            { q: "ئەگەر دووری نێوان دوو تەنی خاوەن بارستە دوو هێندە بکرێت، هێزی کێشکردنی نێوانیان چی لێ دێت؟", options: ["A) دوو هێندە زیاد دەکات", "B) نیوە دەبێتەوە", "C) چوار هێندە کەم دەبێتەوە", "D) وەک خۆی دەمێنێتەوە"], answer: 2 },
+            { q: "ئەنجامی تەواوکاری ∫(2x + 3) dx یەکسانە بە چی؟", options: ["A) x² + 3x + C", "B) 2x² + 3 + C", "C) x² + C", "D) 2x + C"], answer: 0 },
+            { q: "کامیان نیشانەیەکی سەرەکییە بۆ دیاریکردنی حاڵەتی 'دیسلێکسیا' (Dyslexia) لە منداڵدا؟", options: ["A) کێشە لە کۆنتڕۆڵکردنی جووڵە", "B) زەحمەتی لە ناسینەوەی پیت و خوێندنەوەی وشەکان", "C) تێکچوونی باری دەروونی و دوورەپەرێزی", "D) لاوازی لە بینین و بیستن"], answer: 1 },
+            { q: "لە تیۆری 'بندورا'دا بۆ فێربوونی کۆمەڵایەتی، چەمکی سەرەکی چییە بۆ گۆڕینی ڕەفتار؟", options: ["A) سزا و پاداشتی ماددی", "B) مۆدێلینگ و چاو لێکردن (Modeling)", "C) گەڕانەوە بۆ بیرەوەرییە کۆنەکان", "D) تەنها هاندانی جەستەیی"], answer: 1 },
+            { q: "Identify the correct conditional structure: 'If she ______ harder, she would have passed the exam.'", options: ["A) studies", "B) studied", "C) had studied", "D) has studied"], answer: 2 },
+            { q: "ما هو إعراب کلمة (الطالبُ) في جملة 'ظننتُ الطالبَ ناجحاً'؟", options: ["A) فاعل مرفوع", "B) مفعول به أول منصوب", "C) مفعول به ثان منصوب", "D) مبتدأ مؤخر"], answer: 1 },
+            { q: "لە ڕستەی 'شەو بێدەنگ بوو'، وشەی (بێدەنگ) لە ڕووی پێکهاتەی وشەوە کام جۆرەیە؟", options: ["A) سادە", "B) دارێژراو", "C) لێکدراو", "D) پێوەبستراو"], answer: 1 },
+            { q: "پیتەکانی (ب، ج، د، ک، پ، ت) لە زمانی سریانیدا کە بە 'بگدکپت' ناسراون، چ کاتێک بە نەرمی (ڕوکاکا) دەخوێندرێنەوە؟", options: ["A) کاتێک لە سەرەتای وشە بن", "B) کاتێک پێشیان پیتی بێدەنگ بێت", "C) کاتێک بکەونە دوای پیتێکی بزوێن (Vowel)", "D) کاتێک نیشانەی جەختەیان لەسەر بێت"], answer: 2 },
+            { q: "لە کاتی دروستبوونی پڕۆتیندا (Translation)، ترشە ئەمینییەکان بە چ جۆرە بەستەرێک بە یەکەوە دەبەسترێنەوە؟", options: ["A) بەستەری هایدرۆجینی", "B) بەستەری پێپتایدی (Peptide bond)", "C) بەستەری ئایۆنی", "D) بەستەری کۆڤالێنت"], answer: 1 },
+            { q: "کام لەم ماددانەی خوارەوە بە 'ئەمفۆتێر' (Amphoteric) دادەنرێت؟", options: ["A) HCl", "B) NaOH", "C) H₂O", "D) NaCl"], answer: 2 },
+            { q: "بەپێی یاسای دووەمی تێرمۆداینامیک، 'ئینترۆپی' (Entropy) لە گەردووندا بەردەوام چی لێ دێت؟", options: ["A) کەم دەکات", "B) زیاد دەکات", "C) وەک خۆی دەمێنێتەوە", "D) دەبێتە سفر"], answer: 1 },
+            { q: "لاری هێڵی ڕاست (Slope) کە بە هەردوو خاڵی (2, 5) و (4, 9) تێدەپەڕێت چەندە؟", options: ["A) 1", "B) 3", "C) 2", "D) 4"], answer: 2 },
+            { q: "ستراتیژی 'IEP' لە پەروەردەی تایبەتدا بۆ چ مەبەستێک بەکاردێت؟", options: ["A) بۆ گۆڕینی کتێبە خوێندنەکان", "B) بۆ داڕشتنی بەرنامەیەکی فێربوونی تاکەکەسی بۆ خوێندکار", "C) بۆ دیاریکردنی تێچووی قوتابخانە", "D) بۆ هەڵبژاردنی بەڕێوەبەری قوتابخانە"], answer: 1 },
+            { q: "بە شێوازی چارەسەری 'عەقڵانی-سۆزداری' (REBT)، سەرچاوەی سەرەکی تێکچوونی دەروونی بۆ چی دەگەڕێتەوە؟", options: ["A) ڕووداوە دەرەکییەکان بە تەنیا", "B) جەینیتیک و بۆماوەیی", "C) بیروباوەڕە ناعەقڵانییەکانی خودی کەسەکە", "D) نەبوونی پارەی پێویست"], answer: 2 },
+            { q: "Which of the following is a 'Gerund' in this sentence: 'Walking is a good exercise for health.'", options: ["A) exercise", "B) good", "C) health", "D) Walking"], answer: 3 },
+            { q: "ما هو جمع التكسير للكلمة (مِصباح)؟", options: ["A) مصباحون", "B) مصباحات", "C) مصابيح", "D) مِصباحين"], answer: 2 },
+            { q: "لە ڕستەی 'گوڵەکە بۆنخۆشە'، ئەرکی ڕێزمانیی وشەی (بۆنخۆش) چییە؟", options: ["A) بکەر", "B) تەواوکەری لێکدراو (هەواڵ)", "C) کار (فێڵ)", "D) جێناو"], answer: 1 },
+            { q: "زمانی سریانی سەر بە کام خێزانی زمانەوانییە؟", options: ["A) زمانە هیندۆئەوروپییەکان", "B) زمانە جێرمەنییەکان", "C) زمانە سامییەکان", "D) زمانە ئاڵتاییەکان"], answer: 2 }
         ];
 
         let currentQuestionIndex = 0;
@@ -328,6 +331,10 @@
             isQuizActive = true;
             currentQuestionIndex = 0;
             score = 0;
+            
+            // پێکردنی میوزیک
+            bgMusic.play().catch(e => console.log("کێشە لە لێدانی میوزیک:", e));
+            
             showScreen('screen-quiz');
             loadQuestion();
         }
@@ -357,7 +364,7 @@
         }
 
         function startTimer() {
-            let timeLeft = 10;
+            let timeLeft = 30; // کاتەکە کرا بە 30 چرکە
             const timerEl = document.getElementById('questionTimer');
             timerEl.textContent = timeLeft;
             timerEl.classList.remove('timer-danger');
@@ -366,11 +373,12 @@
             timerInterval = setInterval(() => {
                 timeLeft--;
                 timerEl.textContent = timeLeft;
-                if(timeLeft <= 3) timerEl.classList.add('timer-danger');
+                if(timeLeft <= 5) timerEl.classList.add('timer-danger'); // لە 5 چرکە سور دەبێتەوە
                 
                 if(timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    score -= 1;
+                    // کەمکردنەوەی نمرە بە مەرجی ئەوەی لە سفر کەمتر نەبێت
+                    if(score > 0) score -= 1;
                     timeOutNextQuestion();
                 }
             }, 1000);
@@ -388,7 +396,8 @@
             if(selectedIndex === correctIndex) {
                 score += 1;
             } else {
-                score -= 1;
+                // کەمکردنەوەی نمرە بە مەرجی ئەوەی لە سفر کەمتر نەبێت
+                if(score > 0) score -= 1;
             }
 
             setTimeout(() => {
@@ -422,20 +431,28 @@
         function triggerCheat(message) {
             isQuizActive = false;
             clearInterval(timerInterval);
-            score = "'00"; // لێرەدا دەبێتە دوو سفر وەک تێکست دەچێت بۆ گۆگڵ شیتەکە
+            score = "'00"; // بۆ قۆپیە دوو سفر دەنێرێت کە وەک دەقە و ناچێتە لیستی یەکەمەکان
             endQuiz(message, true);
         }
 
         function endQuiz(message, isCheater = false) {
             isQuizActive = false;
+            
+            // وەستاندنی میوزیک
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+            
             showScreen('screen-result');
             document.getElementById('loadingBox').style.display = 'block';
             document.getElementById('finalMessageBox').style.display = 'none';
 
+            // دڵنیابوونەوە کە ئەگەر ژمارە بێت لە سفر کەمتر نییە پێش ناردن
+            let finalScore = (score === "'00") ? score : Math.max(0, score);
+
             const payload = {
                 name: userName,
                 department: userDept,
-                score: score
+                score: finalScore
             };
 
             fetch(GOOGLE_SHEET_URL, {
