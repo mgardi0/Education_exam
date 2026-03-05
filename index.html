@@ -122,26 +122,8 @@
         .countdown-text { font-size: 8rem; font-weight: 800; background: linear-gradient(to right, #fff, var(--primary-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; width: 100%; flex-shrink: 0; }
-        
-        .timer-circle {
-            width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--primary-blue);
-            display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.1rem;
-            color: var(--primary-blue); transition: all 0.3s;
-        }
-        .timer-danger { border-color: var(--danger-red); color: var(--danger-red); transform: scale(1.1); animation: pulse 1s infinite; }
-
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
         .question-text { font-size: 1.05rem; margin-bottom: 15px; line-height: 1.7; text-align: right; width: 100%; flex-shrink: 0; }
-        .options-container { width: 100%; flex-grow: 1; }
-        
-        .option-btn {
-            background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px; padding: 12px 15px; width: 100%; text-align: right; color: white;
-            font-size: 14px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease;
-        }
-        .option-btn:hover { background: rgba(122, 40, 203, 0.2); border-color: var(--primary-purple); }
-        .option-btn.selected { background: rgba(122, 40, 203, 0.5); border-color: var(--primary-blue); }
 
         .loader {
             border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--primary-blue);
@@ -153,7 +135,7 @@
 <body>
 
     <audio id="bgMusic" loop preload="auto">
-        <source src="Tick-Tock(MP3_320K).mp3" type="audio/mpeg">
+        <source src="Iman Ahmadi - Xana miri - ایمان احمدی - خانه‌میری(MP3_320K).mp3" type="audio/mpeg">
     </audio>
 
     <div class="animated-bg"></div>
@@ -200,14 +182,25 @@
     <div id="screen-quiz" class="screen">
         <div class="glass-card">
             <div class="quiz-header">
-                <div class="timer-circle" id="questionTimer">30</div>
-                <div style="text-align: right;">
-                    <div style="color: var(--primary-blue); font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;" id="questionCounter">پرسیاری 1 / 20</div>
+                <div style="text-align: right; width: 100%;">
+                    <div style="color: var(--primary-blue); font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;" id="questionCounter">پرسیاری 1 / 10</div>
                     <div id="displayUserName" style="color: #ccc; font-size: 0.8rem;">ناو</div>
                 </div>
             </div>
+            
             <div class="question-text" id="questionText">دەقی پرسیار</div>
-            <div class="options-container" id="optionsContainer"></div>
+            
+            <div class="input-group" style="text-align: right; width: 100%; margin-bottom: 15px;">
+                <input type="text" id="userAnswerInput" placeholder="وەڵامەکەت لێرە بنووسە..." autocomplete="off">
+                <div id="answerError" class="error-msg">تکایە بە پیتی کوردی/عەرەبی وەڵامێک بنووسە</div>
+            </div>
+            
+            <button class="btn" id="submitAnswerBtn">وەڵامدانەوە</button>
+
+            <div id="correctAnswerBox" style="display:none; margin-top:15px; background: rgba(0,210,255,0.1); padding: 15px; border-radius: 12px; border: 1px solid var(--primary-blue); text-align: right; width: 100%;">
+                <h3 style="font-size: 0.9rem; color: var(--primary-blue); margin-bottom: 8px;">وەڵامی ئێمە:</h3>
+                <p id="ourAnswerText" style="margin:0; font-size: 0.95rem; color: #fff; line-height: 1.6;"></p>
+            </div>
         </div>
     </div>
 
@@ -225,37 +218,25 @@
 
     <script>
         // لینکی نوێی گۆوگڵ شیتەکە
-        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbyMsICqKF1x1jgRASERFa9W4Bz55IKI8QnUSca6Tdb4_3-dztgBvqr2Ja62amhYyUSx/exec";
+        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzoKSpkULTd1RlzZ-1mfzSg9LCxqLJNZzxJVtw8hdIZlgBqBUgOvIp86ozYVFBvFH6y/exec";
         const bgMusic = document.getElementById('bgMusic');
 
-        // لیستی پرسیارە نوێیەکان
+        // دە پرسیارە نوێیەکە
         const questions = [
-            { q: "کامیان لەم هۆکارانە بەرپرسە لە گواستنەوەی نیشانە دەمارەییەکان لە نێوان دوو دەمارەخانەدا لە ڕێگەی 'Synapse'؟", options: ["A) پۆتاسیۆم", "B) ترشی ئەمینی", "C) گواستەرە دەمارەییەکان (Neurotransmitters)", "D) هۆرمۆنی ئەدریناڵین"], answer: 2 },
-            { q: "لە کارلێکی گەرمیمژدا (Endothermic)، گۆڕانی گەرمی (ΔH) چۆنە؟", options: ["A) سفرە", "B) نەرێنییە (کەمتر لە سفر)", "C) ئەرێنییە (زیاتر لە سفر)", "D) پەیوەندی بە پلەی گەرمییەوە نییە"], answer: 2 },
-            { q: "ئەگەر دووری نێوان دوو تەنی خاوەن بارستە دوو هێندە بکرێت، هێزی کێشکردنی نێوانیان چی لێ دێت؟", options: ["A) دوو هێندە زیاد دەکات", "B) نیوە دەبێتەوە", "C) چوار هێندە کەم دەبێتەوە", "D) وەک خۆی دەمێنێتەوە"], answer: 2 },
-            { q: "ئەنجامی تەواوکاری ∫(2x + 3) dx یەکسانە بە چی؟", options: ["A) x² + 3x + C", "B) 2x² + 3 + C", "C) x² + C", "D) 2x + C"], answer: 0 },
-            { q: "کامیان نیشانەیەکی سەرەکییە بۆ دیاریکردنی حاڵەتی 'دیسلێکسیا' (Dyslexia) لە منداڵدا؟", options: ["A) کێشە لە کۆنتڕۆڵکردنی جووڵە", "B) زەحمەتی لە ناسینەوەی پیت و خوێندنەوەی وشەکان", "C) تێکچوونی باری دەروونی و دوورەپەرێزی", "D) لاوازی لە بینین و بیستن"], answer: 1 },
-            { q: "لە تیۆری 'بندورا'دا بۆ فێربوونی کۆمەڵایەتی، چەمکی سەرەکی چییە بۆ گۆڕینی ڕەفتار؟", options: ["A) سزا و پاداشتی ماددی", "B) مۆدێلینگ و چاو لێکردن (Modeling)", "C) گەڕانەوە بۆ بیرەوەرییە کۆنەکان", "D) تەنها هاندانی جەستەیی"], answer: 1 },
-            { q: "Identify the correct conditional structure: 'If she ______ harder, she would have passed the exam.'", options: ["A) studies", "B) studied", "C) had studied", "D) has studied"], answer: 2 },
-            { q: "ما هو إعراب کلمة (الطالبُ) في جملة 'ظننتُ الطالبَ ناجحاً'؟", options: ["A) فاعل مرفوع", "B) مفعول به أول منصوب", "C) مفعول به ثان منصوب", "D) مبتدأ مؤخر"], answer: 1 },
-            { q: "لە ڕستەی 'شەو بێدەنگ بوو'، وشەی (بێدەنگ) لە ڕووی پێکهاتەی وشەوە کام جۆرەیە؟", options: ["A) سادە", "B) دارێژراو", "C) لێکدراو", "D) پێوەبستراو"], answer: 1 },
-            { q: "پیتەکانی (ب، ج، د، ک، پ، ت) لە زمانی سریانیدا کە بە 'بگدکپت' ناسراون، چ کاتێک بە نەرمی (ڕوکاکا) دەخوێندرێنەوە؟", options: ["A) کاتێک لە سەرەتای وشە بن", "B) کاتێک پێشیان پیتی بێدەنگ بێت", "C) کاتێک بکەونە دوای پیتێکی بزوێن (Vowel)", "D) کاتێک نیشانەی جەختەیان لەسەر بێت"], answer: 2 },
-            { q: "لە کاتی دروستبوونی پڕۆتیندا (Translation)، ترشە ئەمینییەکان بە چ جۆرە بەستەرێک بە یەکەوە دەبەسترێنەوە؟", options: ["A) بەستەری هایدرۆجینی", "B) بەستەری پێپتایدی (Peptide bond)", "C) بەستەری ئایۆنی", "D) بەستەری کۆڤالێنت"], answer: 1 },
-            { q: "کام لەم ماددانەی خوارەوە بە 'ئەمفۆتێر' (Amphoteric) دادەنرێت؟", options: ["A) HCl", "B) NaOH", "C) H₂O", "D) NaCl"], answer: 2 },
-            { q: "بەپێی یاسای دووەمی تێرمۆداینامیک، 'ئینترۆپی' (Entropy) لە گەردووندا بەردەوام چی لێ دێت؟", options: ["A) کەم دەکات", "B) زیاد دەکات", "C) وەک خۆی دەمێنێتەوە", "D) دەبێتە سفر"], answer: 1 },
-            { q: "لاری هێڵی ڕاست (Slope) کە بە هەردوو خاڵی (2, 5) و (4, 9) تێدەپەڕێت چەندە؟", options: ["A) 1", "B) 3", "C) 2", "D) 4"], answer: 2 },
-            { q: "ستراتیژی 'IEP' لە پەروەردەی تایبەتدا بۆ چ مەبەستێک بەکاردێت؟", options: ["A) بۆ گۆڕینی کتێبە خوێندنەکان", "B) بۆ داڕشتنی بەرنامەیەکی فێربوونی تاکەکەسی بۆ خوێندکار", "C) بۆ دیاریکردنی تێچووی قوتابخانە", "D) بۆ هەڵبژاردنی بەڕێوەبەری قوتابخانە"], answer: 1 },
-            { q: "بە شێوازی چارەسەری 'عەقڵانی-سۆزداری' (REBT)، سەرچاوەی سەرەکی تێکچوونی دەروونی بۆ چی دەگەڕێتەوە؟", options: ["A) ڕووداوە دەرەکییەکان بە تەنیا", "B) جەینیتیک و بۆماوەیی", "C) بیروباوەڕە ناعەقڵانییەکانی خودی کەسەکە", "D) نەبوونی پارەی پێویست"], answer: 2 },
-            { q: "Which of the following is a 'Gerund' in this sentence: 'Walking is a good exercise for health.'", options: ["A) exercise", "B) good", "C) health", "D) Walking"], answer: 3 },
-            { q: "ما هو جمع التكسير للكلمة (مِصباح)؟", options: ["A) مصباحون", "B) مصباحات", "C) مصابيح", "D) مِصباحين"], answer: 2 },
-            { q: "لە ڕستەی 'گوڵەکە بۆنخۆشە'، ئەرکی ڕێزمانیی وشەی (بۆنخۆش) چییە؟", options: ["A) بکەر", "B) تەواوکەری لێکدراو (هەواڵ)", "C) کار (فێڵ)", "D) جێناو"], answer: 1 },
-            { q: "زمانی سریانی سەر بە کام خێزانی زمانەوانییە؟", options: ["A) زمانە هیندۆئەوروپییەکان", "B) زمانە جێرمەنییەکان", "C) زمانە سامییەکان", "D) زمانە ئاڵتاییەکان"], answer: 2 }
+            { q: "بۆچی خاوەن مۆلیدەکە لە کاتی بۆردومانەکەدا کارەبا نادات بە گەڕەک؟", a: "تا خەڵک بزانێت دەنگی ناخۆشتر هەیە لە دەنگی مۆلیدە" },
+            { q: "وەزیر بۆچی لە سەرەتای شەڕدا بڕیاری دا دەوام ڕابگرێت؟", a: "نەوەک لە دەوام موشەکیان بەرکەوێت و موچەی شەهیدانەیان لەبۆ ببڕێتەوە" },
+            { q: "گەورەترین کێشەی خەڵک لە ئێستەدا چییە؟", a: "وایەری شەحن بەرناکەوی لە ماڵەوە" },
+            { q: "بۆچی کارەبای نیشتمانی لە ساڵی ٢٠٢٦ دا مایەی پێکەنین بوو؟", a: "چونکە وایەرەکان ببوون بە تەنافی جل هەڵواسین" },
+            { q: "تانکەکانی سەر سنوور بۆچی ڕاوەستابوون و نەدەجوڵان؟", a: "چونکە نۆرەیان گرتبوو لە بۆ بەنزین ئەجمەی بەنزین بوو" },
+            { q: "خوێندکارێکی زانکۆ کاتێک کارەبا دەبڕا و دەوامیش نەبوو، چی کرد بۆ ئەوەی خۆی بغافڵێنێت؟", a: "بیری لەوە دەکردەوە چی ئەگەر شەڕ گەورەتر بوو و بە سینگڵی بمرم" },
+            { q: "بۆچی ئەو موشەکانەی دەگیرانە کوردستان لەشوێنی هەڵە بە ئەرز دەکەوت؟", a: "چونکە کارەبا بڕابوو چاو چاوی نەدەدیت" },
+            { q: "خەڵکی لە کاتی شەڕدا کە کارەبا نییە، گۆشت و خواردنە ساردەکانیان چۆن لە تێکچوون دەپارێزن؟", a: "زیاتر لە جاران لێی دەنێن و دەیخۆن نەوەک تێکچێت" },
+            { q: "بۆچی خەڵک وردە وردە چاویان گۆڕا و بوبوون بە کوندەپەپوو؟", a: "چونکە هەمیشە تاریک بوو چاوی ڕاهاتبوو بە تاریکی" },
+            { q: "نیشانەی کۆتایی هاتنی جەنگ چییە؟", a: "دەڵێن دوو بەیانی دەوامە یەکسەر ئیمتیحانەکانیش دەست پێدەکات" }
         ];
 
         let currentQuestionIndex = 0;
-        let score = 0;
-        let timerInterval;
-        let isQuizActive = false;
+        let score = 0; // وەک ڕێزێک بۆ بەژداریکردنیان هەر پرسیارێک وەڵام بدەنەوە خاڵێکیان پێ دەدەین
         let userName = "";
         let userDept = "";
 
@@ -264,7 +245,8 @@
             document.getElementById(screenId).classList.add('active');
         }
 
-        if(localStorage.getItem('koleji_quiz_completed') === 'true') {
+        // ناوی گۆڕاوەکە کرا بە v3 بۆ ئەوەی بۆ هەمووان سفر ببێتەوە
+        if(localStorage.getItem('koleji_quiz_completed_v3') === 'true') {
             document.getElementById('finalMessage').textContent = "تازە بەژداریت نەکرد گوڵەباخ😏";
             document.getElementById('finalMessage').style.color = "var(--danger-red)";
             showScreen('screen-result');
@@ -282,6 +264,12 @@
                 selectWrapper.classList.remove('open');
                 document.getElementById('deptError').style.display = 'none';
             });
+        });
+
+        // ڕێگەگرتن لە نووسینی ئینگلیزی و هێماکان لە وەڵامەکاندا
+        const userAnswerInput = document.getElementById('userAnswerInput');
+        userAnswerInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^\u0600-\u06FF\u0750-\u077F\s]/g, '');
         });
 
         document.getElementById('startBtn').addEventListener('click', () => {
@@ -311,7 +299,8 @@
             userDept = deptInput;
             document.getElementById('displayUserName').textContent = userName;
 
-            localStorage.setItem('koleji_quiz_completed', 'true');
+            // پاشەکەوتکردن بە ڤێرژنی 3
+            localStorage.setItem('koleji_quiz_completed_v3', 'true');
 
             showScreen('screen-countdown');
             let count = 3;
@@ -328,13 +317,9 @@
         });
 
         function startQuiz() {
-            isQuizActive = true;
             currentQuestionIndex = 0;
             score = 0;
-            
-            // پێکردنی میوزیک
             bgMusic.play().catch(e => console.log("کێشە لە لێدانی میوزیک:", e));
-            
             showScreen('screen-quiz');
             loadQuestion();
         }
@@ -346,99 +331,40 @@
             }
 
             const q = questions[currentQuestionIndex];
-            document.getElementById('questionCounter').textContent = `پرسیاری ${currentQuestionIndex + 1} / 20`;
+            document.getElementById('questionCounter').textContent = `پرسیاری ${currentQuestionIndex + 1} / 10`;
             document.getElementById('questionText').textContent = q.q;
             
-            const optionsContainer = document.getElementById('optionsContainer');
-            optionsContainer.innerHTML = "";
-
-            q.options.forEach((opt, index) => {
-                const btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.textContent = opt;
-                btn.onclick = () => selectAnswer(index, btn);
-                optionsContainer.appendChild(btn);
-            });
-
-            startTimer();
+            // پاککردنەوەی شاشەکە بۆ پرسیاری نوێ
+            userAnswerInput.value = '';
+            document.getElementById('answerError').style.display = 'none';
+            document.getElementById('submitAnswerBtn').style.display = 'block';
+            document.getElementById('correctAnswerBox').style.display = 'none';
         }
 
-        function startTimer() {
-            let timeLeft = 30; // کاتەکە کرا بە 30 چرکە
-            const timerEl = document.getElementById('questionTimer');
-            timerEl.textContent = timeLeft;
-            timerEl.classList.remove('timer-danger');
-
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                timerEl.textContent = timeLeft;
-                if(timeLeft <= 5) timerEl.classList.add('timer-danger'); // لە 5 چرکە سور دەبێتەوە
-                
-                if(timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    // کەمکردنەوەی نمرە بە مەرجی ئەوەی لە سفر کەمتر نەبێت
-                    if(score > 0) score -= 1;
-                    timeOutNextQuestion();
-                }
-            }, 1000);
-        }
-
-        function selectAnswer(selectedIndex, btn) {
-            clearInterval(timerInterval);
-            const correctIndex = questions[currentQuestionIndex].answer;
-            const allBtns = document.querySelectorAll('.option-btn');
+        document.getElementById('submitAnswerBtn').addEventListener('click', () => {
+            const ans = userAnswerInput.value.trim();
             
-            allBtns.forEach(b => b.style.pointerEvents = 'none');
-
-            btn.classList.add('selected');
-
-            if(selectedIndex === correctIndex) {
-                score += 1;
-            } else {
-                // کەمکردنەوەی نمرە بە مەرجی ئەوەی لە سفر کەمتر نەبێت
-                if(score > 0) score -= 1;
+            if(!ans) {
+                document.getElementById('answerError').style.display = 'block';
+                return;
             }
+            
+            document.getElementById('answerError').style.display = 'none';
+            score++; // زیادکردنی خاڵێک
 
+            // پیشاندانی وەڵامی ئێمە
+            document.getElementById('submitAnswerBtn').style.display = 'none';
+            document.getElementById('correctAnswerBox').style.display = 'block';
+            document.getElementById('ourAnswerText').textContent = questions[currentQuestionIndex].a;
+
+            // چاوەڕێکردن بۆ 4 چرکە پاشان چوونە پرسیاری دواتر
             setTimeout(() => {
                 currentQuestionIndex++;
                 loadQuestion();
-            }, 800);
-        }
-
-        function timeOutNextQuestion() {
-            const allBtns = document.querySelectorAll('.option-btn');
-            allBtns.forEach(b => b.style.pointerEvents = 'none');
-
-            setTimeout(() => {
-                currentQuestionIndex++;
-                loadQuestion();
-            }, 800);
-        }
-
-        document.addEventListener("visibilitychange", () => {
-            if (document.hidden && isQuizActive) {
-                triggerCheat("بەتەمای قۆپیە بکەی گوڵەباخ😏");
-            }
+            }, 4000);
         });
 
-        window.addEventListener("keyup", (e) => {
-            if ((e.key === 'PrintScreen' || e.key === 'Meta') && isQuizActive) {
-                triggerCheat("دەتەوێ لۆ برادەران بنێری😏");
-            }
-        });
-
-        function triggerCheat(message) {
-            isQuizActive = false;
-            clearInterval(timerInterval);
-            score = "'00"; // بۆ قۆپیە دوو سفر دەنێرێت کە وەک دەقە و ناچێتە لیستی یەکەمەکان
-            endQuiz(message, true);
-        }
-
-        function endQuiz(message, isCheater = false) {
-            isQuizActive = false;
-            
-            // وەستاندنی میوزیک
+        function endQuiz(message) {
             bgMusic.pause();
             bgMusic.currentTime = 0;
             
@@ -446,13 +372,10 @@
             document.getElementById('loadingBox').style.display = 'block';
             document.getElementById('finalMessageBox').style.display = 'none';
 
-            // دڵنیابوونەوە کە ئەگەر ژمارە بێت لە سفر کەمتر نییە پێش ناردن
-            let finalScore = (score === "'00") ? score : Math.max(0, score);
-
             const payload = {
                 name: userName,
                 department: userDept,
-                score: finalScore
+                score: score
             };
 
             fetch(GOOGLE_SHEET_URL, {
@@ -466,12 +389,11 @@
                 document.getElementById('finalMessageBox').style.display = 'block';
                 const msgEl = document.getElementById('finalMessage');
                 msgEl.textContent = message;
-                if(isCheater) msgEl.style.color = "var(--danger-red)";
-                else msgEl.style.color = "#2ecc71";
+                msgEl.style.color = "#2ecc71";
             }).catch(err => {
                 console.error(err);
                 document.getElementById('loadingBox').style.display = 'none';
-                document.getElementById('finalMessage').textContent = "کێشەیەک هێلە هەیە لە ناردنی داتا، بەڵام تاقیکردنەوەکەت کۆتایی هات.";
+                document.getElementById('finalMessage').textContent = "کێشەیەک لە هێڵەکە هەیە لە ناردنی داتا، بەڵام پێشبڕکێیەکەت کۆتایی هات.";
                 document.getElementById('finalMessageBox').style.display = 'block';
             });
         }
