@@ -217,8 +217,8 @@
     </div>
 
     <script>
-        // لێرەدا لینکە نوێیەکە دانراوە
-        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbykdBxcr2tInQNUP1SHaDphBv7JQdhfQt4LrhyY2S9BBzOwTHnOzMNTzbxa_14d69iG/exec";
+        // لێرەدا لینکە نوێیەکەت جێگیر کرا
+        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbxEky5X-f6aIVT-qXEu4lS2O5wfTD8jK99WlvONKQIYxd1-fF1kVjXD4rbXRKWS2fZJ/exec";
         const bgMusic = document.getElementById('bgMusic');
 
         const questions = [
@@ -245,8 +245,8 @@
             document.getElementById(screenId).classList.add('active');
         }
 
-        // ڤێرژنی لۆکاڵ ستۆریج گۆڕا بۆ v5
-        if(localStorage.getItem('koleji_quiz_completed_v5') === 'true') {
+        // ڤێرژنی لۆکاڵ ستۆریج گۆڕا بۆ v6 بۆ ئەوەی بتوانیت تاقیبکەیتەوە
+        if(localStorage.getItem('koleji_quiz_completed_v6') === 'true') {
             document.getElementById('finalMessage').textContent = "تازە بەژداریت نەکرد گوڵەباخ😏";
             document.getElementById('finalMessage').style.color = "var(--danger-red)";
             showScreen('screen-result');
@@ -298,7 +298,7 @@
             userDept = deptInput;
             document.getElementById('displayUserName').textContent = userName;
 
-            localStorage.setItem('koleji_quiz_completed_v5', 'true');
+            localStorage.setItem('koleji_quiz_completed_v6', 'true');
 
             showScreen('screen-countdown');
             let count = 3;
