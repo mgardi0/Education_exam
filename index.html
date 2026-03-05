@@ -217,11 +217,10 @@
     </div>
 
     <script>
-        // لینکی نوێی گۆوگڵ شیتەکە
-        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzoKSpkULTd1RlzZ-1mfzSg9LCxqLJNZzxJVtw8hdIZlgBqBUgOvIp86ozYVFBvFH6y/exec";
+        // لێرەدا لینکە نوێیەکە دانراوە
+        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbykdBxcr2tInQNUP1SHaDphBv7JQdhfQt4LrhyY2S9BBzOwTHnOzMNTzbxa_14d69iG/exec";
         const bgMusic = document.getElementById('bgMusic');
 
-        // دە پرسیارە نوێیەکە
         const questions = [
             { q: "بۆچی خاوەن مۆلیدەکە لە کاتی بۆردومانەکەدا کارەبا نادات بە گەڕەک؟", a: "تا خەڵک بزانێت دەنگی ناخۆشتر هەیە لە دەنگی مۆلیدە" },
             { q: "وەزیر بۆچی لە سەرەتای شەڕدا بڕیاری دا دەوام ڕابگرێت؟", a: "نەوەک لە دەوام موشەکیان بەرکەوێت و موچەی شەهیدانەیان لەبۆ ببڕێتەوە" },
@@ -236,17 +235,18 @@
         ];
 
         let currentQuestionIndex = 0;
-        let score = 0; // وەک ڕێزێک بۆ بەژداریکردنیان هەر پرسیارێک وەڵام بدەنەوە خاڵێکیان پێ دەدەین
+        let score = 0; 
         let userName = "";
         let userDept = "";
+        let userAnswers = {}; 
 
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
         }
 
-        // ناوی گۆڕاوەکە کرا بە v3 بۆ ئەوەی بۆ هەمووان سفر ببێتەوە
-        if(localStorage.getItem('koleji_quiz_completed_v3') === 'true') {
+        // ڤێرژنی لۆکاڵ ستۆریج گۆڕا بۆ v5
+        if(localStorage.getItem('koleji_quiz_completed_v5') === 'true') {
             document.getElementById('finalMessage').textContent = "تازە بەژداریت نەکرد گوڵەباخ😏";
             document.getElementById('finalMessage').style.color = "var(--danger-red)";
             showScreen('screen-result');
@@ -266,7 +266,6 @@
             });
         });
 
-        // ڕێگەگرتن لە نووسینی ئینگلیزی و هێماکان لە وەڵامەکاندا
         const userAnswerInput = document.getElementById('userAnswerInput');
         userAnswerInput.addEventListener('input', function() {
             this.value = this.value.replace(/[^\u0600-\u06FF\u0750-\u077F\s]/g, '');
@@ -299,8 +298,7 @@
             userDept = deptInput;
             document.getElementById('displayUserName').textContent = userName;
 
-            // پاشەکەوتکردن بە ڤێرژنی 3
-            localStorage.setItem('koleji_quiz_completed_v3', 'true');
+            localStorage.setItem('koleji_quiz_completed_v5', 'true');
 
             showScreen('screen-countdown');
             let count = 3;
@@ -319,6 +317,7 @@
         function startQuiz() {
             currentQuestionIndex = 0;
             score = 0;
+            userAnswers = {}; 
             bgMusic.play().catch(e => console.log("کێشە لە لێدانی میوزیک:", e));
             showScreen('screen-quiz');
             loadQuestion();
@@ -326,7 +325,7 @@
 
         function loadQuestion() {
             if(currentQuestionIndex >= questions.length) {
-                endQuiz("سوپاس بۆ بەژداریکردنت گوڵەباخ چاوەڕوانبە تاکو ئەنجامەکان ڕادەگەیەنرێت");
+                endQuiz("سوپاس بۆ بەژداریکردنت چاوەڕوانبە تاکو ئەنجامەکان ڕادەگەیەنرێت");
                 return;
             }
 
@@ -334,7 +333,6 @@
             document.getElementById('questionCounter').textContent = `پرسیاری ${currentQuestionIndex + 1} / 10`;
             document.getElementById('questionText').textContent = q.q;
             
-            // پاککردنەوەی شاشەکە بۆ پرسیاری نوێ
             userAnswerInput.value = '';
             document.getElementById('answerError').style.display = 'none';
             document.getElementById('submitAnswerBtn').style.display = 'block';
@@ -349,15 +347,15 @@
                 return;
             }
             
+            userAnswers["Q" + (currentQuestionIndex + 1)] = ans;
+            
             document.getElementById('answerError').style.display = 'none';
-            score++; // زیادکردنی خاڵێک
+            score++; 
 
-            // پیشاندانی وەڵامی ئێمە
             document.getElementById('submitAnswerBtn').style.display = 'none';
             document.getElementById('correctAnswerBox').style.display = 'block';
             document.getElementById('ourAnswerText').textContent = questions[currentQuestionIndex].a;
 
-            // چاوەڕێکردن بۆ 4 چرکە پاشان چوونە پرسیاری دواتر
             setTimeout(() => {
                 currentQuestionIndex++;
                 loadQuestion();
@@ -375,14 +373,14 @@
             const payload = {
                 name: userName,
                 department: userDept,
-                score: score
+                score: score,
+                answers: userAnswers
             };
 
             fetch(GOOGLE_SHEET_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                cache: 'no-cache',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify(payload)
             }).then(() => {
                 document.getElementById('loadingBox').style.display = 'none';
@@ -393,7 +391,7 @@
             }).catch(err => {
                 console.error(err);
                 document.getElementById('loadingBox').style.display = 'none';
-                document.getElementById('finalMessage').textContent = "کێشەیەک لە هێڵەکە هەیە لە ناردنی داتا، بەڵام پێشبڕکێیەکەت کۆتایی هات.";
+                document.getElementById('finalMessage').textContent = "کێشەیەک هەیە لە ناردنی داتا، بەڵام پێشبڕکێیەکەت کۆتایی هات.";
                 document.getElementById('finalMessageBox').style.display = 'block';
             });
         }
